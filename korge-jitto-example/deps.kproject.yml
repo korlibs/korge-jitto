@@ -1,0 +1,6 @@
+#name: deps
+dependencies:
+    - git::korge-jitto::korlibs/korge-jitto::/korge-jitto::8b226d00e0a0443e28590841235c6e3bccf1faa6
+    #- git::korge-jitto::korlibs/korge-jitto::/korge-jitto::v0.0.1
+    #- ../korge-jitto
+
