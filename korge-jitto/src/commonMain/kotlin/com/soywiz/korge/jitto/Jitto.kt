@@ -22,7 +22,9 @@ data class Jitto(
     val rightEyeDist: Double = 0.75,
     val rightEyeAngle: Angle = 90.degrees,
     //var rotation: Angle = -45.degrees,
-) {
+) : Interpolable<Jitto> {
+    override fun interpolateWith(ratio: Double, other: Jitto): Jitto = interpolate(this, other, ratio)
+
     companion object {
         fun interpolate(a: Jitto, b: Jitto, ratio: Double): Jitto {
             return Jitto(
@@ -150,5 +152,40 @@ class JittoView(shapeSide: Double = 512.0) : Container() {
 
     fun VectorBuilder.ellipseCenter(x: Double, y: Double, rw: Double, rh: Double = rw) {
         ellipse(x - rw, y - rh, rw * 2, rh * 2)
+    }
+}
+
+object JittoViewExample {
+    suspend fun runInContainer(container: Container) {
+        val jitto = JittoView(100.0).xy(256, 256).addTo(container)
+        while (true) {
+            container.tween(jitto::x[jitto.x + 10.0], jitto::model[Jitto(
+                rightHand = +10.degrees,
+                leftHand = +14.degrees,
+                leftLeg = +1.0,
+                leftEyeAngle = 0.degrees,
+                rightLeg = -1.0,
+                rightEyeAngle = 0.degrees,
+            )], time = 0.5.seconds)
+
+            container.tween(jitto::x[jitto.x + 10.0], jitto::model[Jitto(
+                rightHand = 10.degrees,
+                leftHand = 14.degrees,
+                leftLeg = +1.0,
+                rightLeg = -1.0,
+                leftEyeDist = 0.0,
+                leftEyeAngle = 0.degrees,
+                rightEyeDist = 0.0,
+                rightEyeAngle = 0.degrees,
+                rotation = 45.degrees
+            )], time = 0.5.seconds)
+
+            container.tween(jitto::x[jitto.x + 10.0], jitto::model[Jitto(
+                rightHand = -10.degrees,
+                leftHand = -14.degrees,
+                leftLeg = -1.0,
+                rightLeg = +1.0,
+            )], time = 0.5.seconds)
+        }
     }
 }
