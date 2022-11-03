@@ -40,10 +40,18 @@ data class Jitto(
     }
 }
 
-class JittoView : Container() {
+class JittoView(shapeSide: Double = 512.0) : Container() {
     var drawShadow = true
     var drawBorder = true
     var drawColor = true
+
+    var shapeSide: Double = shapeSide
+        set(value) {
+            field = value
+            refresh()
+        }
+
+    val shapeScale: Double get() = shapeSide / 512.0
 
     //val graphics = graphics(renderer = GraphicsRenderer.GPU)
     val graphics = graphics(renderer = GraphicsRenderer.SYSTEM)
@@ -71,9 +79,10 @@ class JittoView : Container() {
     }
 
     fun build(shape: ShapeBuilder) {
-        if (drawShadow) shape.render(Layer.BACKGROUND, Colors.BLACK, if (drawBorder) 120.0 else 64.0, Point(0, 20))
-        if (drawBorder) shape.render(Layer.BORDER, Colors.WHITE, 120.0, Point(0, 0))
-        if (drawColor) shape.render(Layer.FILL, Colors["#47009C"], 60.0, Point(0, 0))
+        val shapeScale = this.shapeScale
+        if (drawShadow) shape.render(Layer.BACKGROUND, Colors.BLACK, if (drawBorder) 120.0 else 64.0, Point(0, 20), shapeScale)
+        if (drawBorder) shape.render(Layer.BORDER, Colors.WHITE, 120.0, Point(0, 0), shapeScale)
+        if (drawColor) shape.render(Layer.FILL, Colors["#47009C"], 60.0, Point(0, 0), shapeScale)
     }
 
     enum class Layer {
@@ -82,13 +91,14 @@ class JittoView : Container() {
         FILL
     }
 
-    fun ShapeBuilder.render(layer: Layer, color: RGBA, thickness: Double, displacement: IPoint) {
-        stroke(Stroke(color, thickness = thickness, startCap = LineCap.ROUND, endCap = LineCap.ROUND)) {
+    fun ShapeBuilder.render(layer: Layer, color: RGBA, thickness: Double, displacement: IPoint, scale: Double = 1.0) {
+        stroke(Stroke(color, thickness = thickness * scale, startCap = LineCap.ROUND, endCap = LineCap.ROUND)) {
             val leftArmPoint = Point.fromPolar((-180).degrees + model.leftHand, 220.0)
             val rightArmPoint = Point.fromPolar((0).degrees - model.rightHand, 220.0)
             val leftLegPoint = Point.fromPolar(90.degrees - 38.degrees * model.leftLeg, 250.0)
             val rightLegPoint = Point.fromPolar(90.degrees - 38.degrees * model.rightLeg, 250.0)
             keepTransform {
+                scale(scale)
                 translate(displacement.x, displacement.y)
 
                 line(0.0, 0.0, rightArmPoint.x, rightArmPoint.y)
@@ -111,6 +121,7 @@ class JittoView : Container() {
         if (layer == Layer.BORDER) {
             fill(color) {
                 keepTransform {
+                    scale(scale)
                     translate(displacement.x, displacement.y)
                     ellipseCenter(leftEye.x, leftEye.y, eyeSize, eyeSize)
                     ellipseCenter(rightEye.x, rightEye.y, eyeSize, eyeSize)
@@ -120,14 +131,16 @@ class JittoView : Container() {
         if (layer == Layer.FILL) {
             fill(color) {
                 keepTransform {
+                    scale(scale)
                     translate(displacement.x, displacement.y)
                     ellipseCenter(leftEye.x + eyeLeftPos.x, leftEye.y + eyeLeftPos.y, pupilSize)
                     ellipseCenter(rightEye.x + eyeRightPos.x, rightEye.y + eyeRightPos.y, pupilSize)
                 }
             }
         }
-        stroke(Stroke(color, thickness = thickness * 0.6, startCap = LineCap.ROUND, endCap = LineCap.ROUND)) {
+        stroke(Stroke(color, thickness = thickness * scale * 0.6, startCap = LineCap.ROUND, endCap = LineCap.ROUND)) {
             keepTransform {
+                scale(scale)
                 translate(displacement.x, displacement.y)
                 ellipseCenter(leftEye.x, leftEye.y, eyeSize)
                 ellipseCenter(rightEye.x, rightEye.y, eyeSize)
